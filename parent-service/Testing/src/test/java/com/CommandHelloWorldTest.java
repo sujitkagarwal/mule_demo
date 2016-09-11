@@ -1,5 +1,8 @@
 package com;
 
+import com.hystrix.HystrixCommandExecutionHook;
+import com.netflix.hystrix.Hystrix;
+import com.netflix.hystrix.strategy.HystrixPlugins;
 import org.junit.Assert;
 import org.junit.Test;
 import rx.Observable;
@@ -56,5 +59,12 @@ public class CommandHelloWorldTest {
             }
 
         });
+
+        HystrixPlugins.getInstance().registerCommandExecutionHook(new HystrixCommandExecutionHook());
+
+
+
+
+
     }
 }
