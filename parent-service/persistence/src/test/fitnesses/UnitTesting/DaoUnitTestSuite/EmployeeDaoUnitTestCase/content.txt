@@ -1,0 +1,3 @@
+!|fixture.dao.EmployeeDaoFixture|
+|empId|name|age|dob|getEmployee?|
+|345|suj|32|08/11/1982|true|

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:jersey="http://www.mulesoft.org/schema/mule/jersey"
+      xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:spring="http://www.springframework.org/schema/beans"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:context="http://www.springframework.org/schema/context"
+      xmlns:script="http://www.mulesoft.org/schema/mule/scripting"
+      xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+	http://www.mulesoft.org/schema/mule/jersey http://www.mulesoft.org/schema/mule/jersey/current/mule-jersey.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+	http://www.mulesoft.org/schema/mule/scripting  http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+
+
+    <spring:beans>
+        <context:component-scan base-package="com.dev.sa"/>
+    </spring:beans>
+    <vm:connector name="vmConnector" doc:name="VM" validateConnections="true">
+        <receiver-threading-profile maxThreadsIdle="10" maxThreadsActive="50"/>
+        <dispatcher-threading-profile maxBufferSize="5000" maxThreadsActive="50"/>
+    </vm:connector>
+    <flow doc:name="jerseryRestFlow" name="jerseryRestFlow">
+        <inbound-endpoint exchange-pattern="request-response"
+                          address="servlet://execution" doc:name="Generic"/>
+        <jersey:resources doc:name="REST">
+            <component>
+                <spring-object bean="services"/>
+                <binding interface="com.dev.sa.operation.Perform" method="peformOpertaion">
+                    <vm:outbound-endpoint path="peformOpertaionIn"
+                                          exchange-pattern="request-response"/>
+                </binding>
+            </component>
+            <jersey:exception-mapper class="com.dev.sa.exception.ServiceExceptionMapper"/>
+            <jersey:context-resolver class="com.dev.sa.common.JacksonContextProvider"/>
+            <!--<component doc:name="testResponse">
+               <spring-object bean="response"></spring-object>
+           </component>-->
+        </jersey:resources>
+    </flow>
+    <flow name="peformOpertaion" doc:name="peformOpertaion">
+        <vm:inbound-endpoint exchange-pattern="request-response"
+                             path="peformOpertaionIn" doc:name="peformOpertaionIn"/>
+        <script:component doc:name="log start">
+            <script:script engine="Groovy"><![CDATA[def msg="request for processing";
+            log.info(msg);
+           for ( request in payload.getInfo()){
+           log.info(request.toString());
+                }
+          retrun paylod;]]>
+            </script:script>
+        </script:component>
+        <component doc:name="validator">
+            <spring-object bean="genericValidator"></spring-object>
+        </component>
+         <!--<scatter-gather timeout="15000" doc:name="Scatter Gather">
+            <custom-aggregation-strategy class="com.dev.sa.common.PickFirstAggregationStrategy"/>
+
+            <request-reply storePrefix="DRLSplit" doc:name="DRL">
+                <vm:outbound-endpoint exchange-pattern="one-way" path="DrlIn" doc:name="DRL In">
+                    <message-properties-transformer scope="outbound">
+                        <delete-message-property key="MULE_REPLYTO"/>
+                    </message-properties-transformer>
+                </vm:outbound-endpoint>
+                <vm:inbound-endpoint path="DRLOut" exchange-pattern="one-way" doc:name="DRL OUT"/>
+            </request-reply>
+            <request-reply storePrefix="SQLSplit" doc:name="SQL">
+                <vm:outbound-endpoint exchange-pattern="one-way" path="SQLIn" doc:name="SQL In">
+                    <message-properties-transformer scope="outbound">
+                        <delete-message-property key="MULE_REPLYTO"/>
+                    </message-properties-transformer>
+                </vm:outbound-endpoint>
+                <vm:inbound-endpoint path="SQLOut" exchange-pattern="one-way" doc:name="SQL OUT"/>
+            </request-reply>
+
+        </scatter-gather>-->
+        <request-reply storePrefix="InsertOpn" doc:name="InsertO pn">
+            <vm:outbound-endpoint exchange-pattern="one-way" path="InsertOpnIn" doc:name="Insert Opn In">
+                <message-properties-transformer scope="outbound">
+                    <delete-message-property key="MULE_REPLYTO"/>
+                </message-properties-transformer>
+            </vm:outbound-endpoint>
+            <vm:inbound-endpoint path="InsertOpnOut" exchange-pattern="one-way" doc:name="Insert Opn Out"/>
+        </request-reply>
+    </flow>
+</mule>

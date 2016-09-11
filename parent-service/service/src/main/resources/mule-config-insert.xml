@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:jersey="http://www.mulesoft.org/schema/mule/jersey"
+      xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:spring="http://www.springframework.org/schema/beans"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:context="http://www.springframework.org/schema/context"
+      xmlns:script="http://www.mulesoft.org/schema/mule/scripting"
+      xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+	http://www.mulesoft.org/schema/mule/jersey http://www.mulesoft.org/schema/mule/jersey/current/mule-jersey.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+	http://www.mulesoft.org/schema/mule/scripting  http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+
+    <flow name="Insert_Opn_fork" doc:name="Insert Opn fork">
+        <vm:inbound-endpoint exchange-pattern="one-way"
+                             path="InsertOpnIn" doc:name="Insert Opn In"/>
+        <collection-splitter doc:name="spliter of object"/>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="subInsertOpnIn" doc:name="sub Insert Opn In"/>
+    </flow>
+    <flow name="Insert_opertaion" doc:name="Insert Operation">
+        <vm:inbound-endpoint exchange-pattern="one-way"
+                             path="subInsertOpnIn" doc:name="sub Insert Opn In "/>
+        <logger level="INFO" message="request payload #[payload.toString()]"/>
+        <component doc:name="performImpl">
+            <spring-object bean="performImpl"></spring-object>
+        </component>
+        <flow-ref name="Insert_Opn_join" />
+    </flow>
+    <flow name="Insert_Opn_join" doc:name="Insert Opn join">
+        <collection-aggregator doc:name="merger of object"/>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="InsertOpnOut" doc:name="Insert Opn Out"/>
+    </flow>
+
+</mule>
