@@ -31,7 +31,6 @@ public class JsonClient {
     private ObjectMapper mapper = new ObjectMapper();
 
     public JsonClient() {
-
         init();
     }
 
